@@ -1,0 +1,164 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="CarlBot - Login">
+  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div class="max-w-md w-full space-y-8 p-8">
+      <!-- Logo y título -->
+      <div class="text-center">
+        <div class="mx-auto h-20 w-20 bg-blue-600 rounded-full flex items-center justify-center mb-6">
+          <i data-lucide="bot" class="h-10 w-10 text-white"></i>
+        </div>
+        <h2 class="text-3xl font-bold text-gray-900">CarlBot</h2>
+        <p class="mt-2 text-sm text-gray-600">
+          Sistema de gestión de eventos
+        </p>
+      </div>
+
+      <!-- Formulario de login -->
+      <div class="bg-white rounded-xl shadow-lg p-8">
+        <form id="loginForm" class="space-y-6">
+          <!-- Campo de teléfono -->
+          <div>
+            <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-2">
+              Número de teléfono del bot
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i data-lucide="phone" class="h-5 w-5 text-gray-400"></i>
+              </div>
+              <input
+                id="phoneNumber"
+                name="phoneNumber"
+                type="tel"
+                required
+                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Ej: +573001234567"
+              />
+            </div>
+          </div>
+
+          <!-- Campo de contraseña -->
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+              Contraseña
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i data-lucide="lock" class="h-5 w-5 text-gray-400"></i>
+              </div>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Eventos.1286"
+              />
+            </div>
+          </div>
+
+          <!-- Mensaje de error -->
+          <div id="errorMessage" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <div class="flex items-center">
+              <i data-lucide="alert-circle" class="h-5 w-5 mr-2"></i>
+              <span id="errorText"></span>
+            </div>
+          </div>
+
+          <!-- Botón de login -->
+          <button
+            type="submit"
+            id="loginButton"
+            class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span id="loginButtonText">Iniciar Sesión</span>
+            <i id="loginSpinner" data-lucide="loader-2" class="hidden animate-spin h-5 w-5 ml-2"></i>
+          </button>
+        </form>
+
+        <!-- Información adicional -->
+        <div class="mt-6 text-center">
+          <p class="text-xs text-gray-500">
+            Usa la contraseña fija: <code class="bg-gray-100 px-2 py-1 rounded">Eventos.1286</code>
+          </p>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="text-center">
+        <p class="text-sm text-gray-500">
+          © 2024 CarlBot. Sistema de gestión de eventos.
+        </p>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  const API_BASE_URL = 'http://localhost:3000/api';
+
+  document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const phoneNumber = (document.getElementById('phoneNumber') as HTMLInputElement).value;
+    const password = (document.getElementById('password') as HTMLInputElement).value;
+    const errorMessage = document.getElementById('errorMessage');
+    const errorText = document.getElementById('errorText');
+    const loginButton = document.getElementById('loginButton') as HTMLButtonElement;
+    const loginButtonText = document.getElementById('loginButtonText');
+    const loginSpinner = document.getElementById('loginSpinner');
+
+    // Ocultar mensaje de error
+    errorMessage?.classList.add('hidden');
+    
+    // Mostrar loading
+    loginButton.disabled = true;
+    loginButtonText!.textContent = 'Iniciando...';
+    loginSpinner?.classList.remove('hidden');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNumber, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Guardar token en localStorage
+        localStorage.setItem('carlbot_token', data.token);
+        localStorage.setItem('carlbot_user', JSON.stringify(data.user));
+        
+        // Redirigir al dashboard
+        window.location.href = '/dashboard';
+      } else {
+        // Mostrar error
+        if (errorText) {
+          errorText.textContent = data.error || 'Error de autenticación';
+        }
+        errorMessage?.classList.remove('hidden');
+      }
+    } catch (error) {
+      console.error('Error de login:', error);
+      if (errorText) {
+        errorText.textContent = 'Error de conexión. Verifica que el servidor esté ejecutándose.';
+      }
+      errorMessage?.classList.remove('hidden');
+    } finally {
+      // Restaurar botón
+      loginButton.disabled = false;
+      loginButtonText!.textContent = 'Iniciar Sesión';
+      loginSpinner?.classList.add('hidden');
+    }
+  });
+
+  // Verificar si ya está logueado
+  if (localStorage.getItem('carlbot_token')) {
+    window.location.href = '/dashboard';
+  }
+</script>
