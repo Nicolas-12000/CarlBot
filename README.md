@@ -271,15 +271,4 @@ Si encuentras algún problema:
 - Usa la contraseña exacta: `Eventos.1286`
 - Verifica que el número de teléfono sea el del bot conectado
 
-## 🌟 Roadmap
-
-- [ ] Notificaciones push web
-- [ ] Exportación de datos a Excel
-- [ ] Múltiples eventos simultáneos
-- [ ] Integración con calendarios
-- [ ] Templates de mensajes personalizables
-- [ ] Métricas avanzadas y analytics
-
----
-
 **Desarrollado con ❤️ para la gestión eficiente de eventos académicos y empresariales.**
